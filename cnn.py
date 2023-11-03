@@ -3,7 +3,6 @@ import cnnmath
 import skimage.measure as measure
 
 N = 1
-W = 4
 K = 10
 
 print_counter = 0
@@ -16,6 +15,7 @@ reg = 0
 # inp1 = np.array(np.mat('1 1 -1 1; -1 0 1 1; 1 0 -1 1; 0 0 -1 -1'))
 inp1 = np.array(np.mat('1 1 1 1; 1 1 1 1; 1 1 1 1; 1 1 1 1'))
 inp = np.array([inp1, inp1])
+inp_dim = 4
 print(f"inp shape = {inp.shape}")
 print(inp)
 targets = [0, 1, 0, 0, 0, 0, 0, 0, 0, 0]
@@ -28,9 +28,9 @@ WF1 = np.array(np.mat('1 1 1 ; 0 0 0; 0 0 0'))
 WF2 = np.array(np.mat('1 0 0 ; 1 0 0; 1 0 0'))
 bF1 = 0
 bF2 = 0
-pool_dim = int(W * W / 4)
+pool_dim = int(inp_dim / 2)
 # WOut = np.random.randn(pool_dim, K)
-WOut = np.ones((pool_dim, K))
+WOut = np.ones((inp_dim * pool_dim, K))
 bOut = np.zeros((1, K))
 
 # train the network
@@ -46,7 +46,7 @@ for epoch in range(epochs):
     relu2 = np.maximum(0, f2)
     print(f"relu2 shape = {relu2.shape}")
 
-    conv_out = np.zeros((num_examples, num_filters, inp.shape[1], inp.shape[2]))
+    conv_out = np.zeros((num_examples, num_filters, inp_dim, inp_dim))
     conv_out[:, 0, :, :] = relu1
     conv_out[:, 1, :, :] = relu2
     print("relu1")
@@ -58,15 +58,21 @@ for epoch in range(epochs):
     print(f"conv_out shape = {conv_out.shape}")
     print(conv_out)
 
-    pool = np.zeros((num_examples, num_filters, int(inp.shape[1] / 2), int(inp.shape[2] / 2)))
+    pool = np.zeros((num_examples, num_filters, pool_dim, pool_dim))
     print(f"pool shape = {pool.shape}")
-    print(pool)
-    exit()
     for i in range(num_examples):
-        pool[i] = measure.block_reduce(relu2[i], (2, 2), np.max)
+        for j in range(num_filters):
+            pool[i][j] = measure.block_reduce(conv_out[i][j], (2, 2), np.max)
 
-    pool_out = np.reshape(pool, (num_examples, pool_dim))
+    print(pool)
+    pool_out = np.reshape(pool, (num_examples, inp_dim * pool_dim))
+    print(f"pool_out shape = {pool_out.shape}")
+    print(pool_out)
+
     scores = np.dot(pool_out, WOut) + bOut
+    print(f"scores shape={scores.shape}")
+    print(scores)
+    exit()
 
     # transform scores to probabilities
     exp_scores = np.exp(scores - np.max(scores, axis=1, keepdims=True))

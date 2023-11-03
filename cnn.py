@@ -72,7 +72,6 @@ for epoch in range(epochs):
     scores = np.dot(pool_out, WOut) + bOut
     print(f"scores shape={scores.shape}")
     print(scores)
-    exit()
 
     # transform scores to probabilities
     exp_scores = np.exp(scores - np.max(scores, axis=1, keepdims=True))
@@ -93,20 +92,29 @@ for epoch in range(epochs):
 
     # gradients
     dscores = (probs - y) / num_examples
+    print(f"dscores shape = {dscores.shape}, scores shape = {scores.shape}")
+    # print(dscores)
 
     dWOut = np.dot(pool_out.T, dscores)
+    print(f"dWOut shape = {dWOut.shape}, WOut shape = {WOut.shape}")
     dbOut = np.sum(dscores, axis=0, keepdims=True)
+    print(f"dbOut shape = {dbOut.shape}, bOut shape = {bOut.shape}")
 
     dpool_out = np.dot(dscores, WOut.T)
-    dpool = np.reshape(dpool_out, (num_examples, int(inp.shape[1] / 2), int(inp.shape[2] / 2)))
+    print(f"dpool_out shape = {dpool_out.shape}, pool_out shape = {pool_out.shape}")
+
+    dpool = np.reshape(dpool_out, (num_examples, num_filters, pool_dim, pool_dim))
+    print(f"dpool shape = {dpool.shape}, pool shape = {pool.shape}")
 
     df2 = dpool
     df2[pool <= 0] = 0
 
     dWF2 = cnnmath.convolve(relu1, df2, 0)
-    print(f"dWF2 shape = {dWF2.shape}")
+    print(f"dWF2 shape = {dWF2.shape}, WF2 shape = {WF2.shape}")
     dbF2 = np.sum(df2)
+    print(f"dbF2 = {dbF2:.4f}, bF2 is a number")
 
+    exit()
     drelu1 = cnnmath.convolve(np.pad(df2, 1), np.rot90(WF2, 2), 0)
 
 

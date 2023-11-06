@@ -169,3 +169,11 @@ for epoch in range(epochs):
 
         WOut += -step_size * dWOut
         bOut += -step_size * dbOut
+
+np.save("WF1.npy", WF1)
+np.save("bF1.npy", bF1)
+np.save("WF2.npy", WF2)
+np.save("bF2.npy", bF2)
+np.save("WOut.npy", WOut)
+np.save("bOut.npy", bOut)
+

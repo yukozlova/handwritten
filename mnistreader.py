@@ -5,7 +5,7 @@ def get_train_samples(batch_size):
     textlines_all = text.strip().split("\n")
 
     # random.shuffle(textlines_all)
-    textlines = textlines_all[:500]
+    textlines = textlines_all[:100]
     start = 0
 
     while start < len(textlines):

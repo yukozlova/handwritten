@@ -7,10 +7,10 @@ N = 1
 K = 10
 
 print_counter = 0
-print_every = 1
+print_every = 10
 
 # hyperparameters
-epochs = 10
+epochs = 6
 reg = 0
 step_size = 0.4
 
@@ -27,15 +27,18 @@ print(f"inp_dim = {inp_dim}")
 
 # weights initialization
 num_filters = 2
-WF1 = np.random.randn(3, 3)
+WF1 = np.random.rand(7, 7)
+# WF1 = np.random.randn(3, 3)
 # WF1 = np.array(np.mat('1.0 1 1 ; 0 0 0; 0 0 0'))
-WF2 = np.random.randn(3, 3)
+WF2 = np.random.rand(7, 7)
+# WF2 = np.random.randn(3, 3)
 # WF2 = np.array(np.mat('1.0 0 0 ; 1 0 0; 1 0 0'))
 bF1 = 0
 bF2 = 0
 pool_dim = int(inp_dim / 2)
 P = num_filters * pool_dim * pool_dim
-WOut = np.random.randn(P, K)
+WOut = np.random.rand(P, K)
+# WOut = np.random.randn(P, K)
 # WOut = np.ones((P, K))
 bOut = np.zeros((1, K))
 
@@ -47,17 +50,21 @@ for epoch in range(epochs):
         num_examples = inp.shape[0]
         # print(f"num_examples = {num_examples}")
 
+        padding_F1 = int((WF1.shape[0] - 1) / 2)
+
         # cnn calculations
         f1 = np.zeros(inp.shape)
         for i in range(num_examples):
-            f1[i] = cnnmath.convolve(inp[i], WF1, bF1)
+            f1[i] = cnnmath.convolve(inp[i], WF1, bF1, padding_F1, inp_dim)
         relu1 = np.maximum(0, f1)
         # print(f"relu1 shape = {relu1.shape}")
         # print(relu1)
 
+        padding_F2 = int((WF2.shape[0] - 1) / 2)
+
         f2 = np.zeros(inp.shape)
         for i in range(num_examples):
-            f2[i] = cnnmath.convolve(inp[i], WF2, bF2)
+            f2[i] = cnnmath.convolve(inp[i], WF2, bF2, padding_F2, inp_dim)
         relu2 = np.maximum(0, f2)
         # print(f"relu2 shape = {relu2.shape}")
         # print(relu2)
@@ -137,9 +144,10 @@ for epoch in range(epochs):
         # print(f"df1[1] shape = {df1[1].shape}")
 
         dWF1 = np.zeros(WF1.shape)
+        dWF1_conv_dim = WF1.shape[0]
         for i in range(num_examples):
-            dWF1_one = cnnmath.convolve(inp[i], df1[i], 0)
-            dWF1 = np.add(dWF1, dWF1_one)
+            dWF1_one = cnnmath.convolve(inp[i], df1[i], 0, padding_F1, dWF1_conv_dim)
+            dWF1 += dWF1_one
 
         # print(f"dWF1 shape = {dWF1.shape}, WF1 shape = {WF1.shape}")
         # print(dWF1)
@@ -147,8 +155,9 @@ for epoch in range(epochs):
         # print(f"dbF1 = {dbF1:.4f}, bF1 is a number")
 
         dWF2 = np.zeros(WF2.shape)
+        dWF2_conv_dim = WF2.shape[0]
         for i in range(num_examples):
-            dWF2_one_example = cnnmath.convolve(inp[i], df2[i], 0)
+            dWF2_one_example = cnnmath.convolve(inp[i], df2[i], 0, padding_F2, dWF2_conv_dim)
             dWF2 += dWF2_one_example
 
         # print(f"dWF2 shape = {dWF2.shape}, WF2 shape = {WF2.shape}")
@@ -170,10 +179,16 @@ for epoch in range(epochs):
         WOut += -step_size * dWOut
         bOut += -step_size * dbOut
 
-np.save("WF1.npy", WF1)
-np.save("bF1.npy", bF1)
-np.save("WF2.npy", WF2)
-np.save("bF2.npy", bF2)
-np.save("WOut.npy", WOut)
-np.save("bOut.npy", bOut)
+np.save("generated-weights/WF1.npy", WF1)
+np.save("generated-weights/bF1.npy", bF1)
+np.save("generated-weights/WF2.npy", WF2)
+np.save("generated-weights/bF2.npy", bF2)
+np.save("generated-weights/WOut.npy", WOut)
+np.save("generated-weights/bOut.npy", bOut)
 
+print(WF1)
+print(WF2)
+print(bF1)
+print(bF2)
+print(WOut)
+print(bOut)

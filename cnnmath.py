@@ -20,15 +20,11 @@ def convolve_old(array, kernel, bias):
     return conv
 
 
-def convolve(array, kernel, bias):
+def convolve(array, kernel, bias, padding, conv_dim):
     kernel_dim = kernel.shape[0]
-    array_dim = array.shape[0]
-    padding = 1
-    stride = 1
-    conv_dim = int((array_dim - kernel_dim + 2 * padding) / stride) + 1
 
     convolution = np.zeros((conv_dim, conv_dim))
-    padded = np.pad(array, 1)
+    padded = np.pad(array, padding)
 
     for i in range(conv_dim):
         for j in range(conv_dim):
